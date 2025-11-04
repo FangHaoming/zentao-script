@@ -24,9 +24,20 @@ function useLocalStorage<T>(key: string, initial: T) {
 function formatHours(h: number): string { return (Math.round(h * 100) / 100).toFixed(2) }
 function toDays(h: number): string { return formatHours(h / 8) }
 
+function getCookieValue(name: string): string {
+  const match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'))
+  return match ? decodeURIComponent(match[3]) : ''
+}
+
 function App() {
   const [visible, setVisible] = useState(false)
-  const [tokenInput, setTokenInput] = useState(localStorage.getItem(STORAGE_KEYS.token) || '')
+  const [tokenInput, setTokenInput] = useState(() => {
+    const stored = localStorage.getItem(STORAGE_KEYS.token)
+    if (stored) return stored
+    // 自动从cookie获取zentaosid
+    const zentaosid = getCookieValue('zentaosid')
+    return zentaosid || ''
+  })
   const [users, setUsers] = useState<User[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [executions, setExecutions] = useState<Execution[]>([])
@@ -127,19 +138,6 @@ function App() {
       setLoading(false)
     }
   }
-
-  const shadowHostRef = useRef<HTMLDivElement | null>(null)
-  useEffect(() => {
-    if (shadowHostRef.current) return
-    const host = document.createElement('div')
-    host.id = 'zentao-userscript-host'
-    host.style.position = 'fixed'
-    host.style.zIndex = '2147483647'
-    host.style.right = '16px'
-    host.style.bottom = '16px'
-    document.body.appendChild(host)
-    shadowHostRef.current = host
-  }, [])
 
   return (
     <>
@@ -319,17 +317,31 @@ function pad2(n: number): string { return n < 10 ? '0' + n : String(n) }
 function formatMonth(d: Date): string { return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}` }
 
 function mount() {
-  const containerId = 'zentao-userscript-container'
-  let container = document.getElementById(containerId)
-  if (!container) {
-    container = document.createElement('div')
-    container.id = containerId
-    document.body.appendChild(container)
+  // 只在主窗口中挂载，避免在iframe中重复挂载
+  if (window.self !== window.top) {
+    console.log('ZenTao userscript: Skip mounting in iframe')
+    return
   }
+  
+  const containerId = 'zentao-userscript-container'
+  
+  // 清理所有已存在的容器（处理HMR重载）
+  const existingContainers = document.querySelectorAll(`#${containerId}`)
+  existingContainers.forEach(el => el.remove())
+  
+  const container = document.createElement('div')
+  container.id = containerId
+  document.body.appendChild(container)
+  
   const root = createRoot(container)
   root.render(<App />)
 }
 
-mount()
+// 确保DOM加载完成后再挂载
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', mount)
+} else {
+  mount()
+}
 
 
