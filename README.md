@@ -1,4 +1,4 @@
-# ZenTao 月度工时统计脚本
+# 禅道（ZenTao） 月度工时统计脚本
 
 一个基于 React 的浮动面板用户脚本，用于统计指定月份内已完成任务的工时消耗。支持 Tampermonkey/Greasemonkey。
 
@@ -29,11 +29,11 @@ yarn build
 
 ## ⚙️ 配置说明
 
-1. 访问 `www.zentao.rayvision.com` 的任意页面
-2. 点击页面右下角的浮动"报告"按钮
-3. 在配置面板中输入您的 API Token 并保存
-4. API 请求使用 `Token: <your token>` 头部进行认证
-5. 基础 URL 固定为 `http://www.zentao.rayvision.com/zentao/api.php/v1`
+1. 访问 `禅道（ZenTao）` 的任意页面
+2. 点击页面右下角的浮动"报告"按钮打开配置面板
+3. 输入您的 API Token 并点击保存
+4. 脚本将使用 `Token: <your token>` 头部进行 API 认证
+5. API 基础地址：`http://<your domain>/zentao/api.php/v1`
 
 ## ✨ 功能特性
 
