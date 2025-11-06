@@ -15,10 +15,9 @@ export default defineConfig({
         namespace: 'zentao-userscript',
         version: '0.1.0',
         description: 'Floating report to sum consumed hours of finished tasks per user for selected month',
-        author: 'You',
+        author: 'FangHaoming',
         match: [
-          'http://www.zentao.rayvision.com/*',
-          'https://www.zentao.rayvision.com/*'
+          '*://*/zentao/*'
         ],
         grant: 'none'
       },
