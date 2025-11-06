@@ -1,33 +1,14 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { DEFAULT_CONCURRENCY, STORAGE_KEYS } from './constants'
 import { fetchAllExecutions, fetchAllTasks, fetchProjects, fetchUsers, isDoneStartedInMonth, setToken, taskConsumerAccount } from './api'
-import type { Execution, Filters, Project, Task, User } from './types'
-
-type Aggregation = Map<string, number> // account -> hours
-
-function useLocalStorage<T>(key: string, initial: T) {
-  const [state, setState] = useState<T>(() => {
-    try {
-      const raw = localStorage.getItem(key)
-      return raw ? (JSON.parse(raw) as T) : initial
-    } catch {
-      return initial
-    }
-  })
-  useEffect(() => {
-    try { localStorage.setItem(key, JSON.stringify(state)) } catch {}
-  }, [key, state])
-  return [state, setState] as const
-}
-
-function formatHours(h: number): string { return (Math.round(h * 100) / 100).toFixed(2) }
-function toDays(h: number): string { return formatHours(h / 8) }
-
-function getCookieValue(name: string): string {
-  const match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'))
-  return match ? decodeURIComponent(match[3]) : ''
-}
+import type { Aggregation, Execution, Filters, Project, User } from './types'
+import { getCookieValue, formatMonth } from './utils'
+import { useLocalStorage } from './hooks/useLocalStorage'
+import { FloatingButton } from './components/FloatingButton'
+import { Panel } from './components/Panel'
+import { CheckboxMultiSelect } from './components/CheckboxMultiSelect'
+import { ResultsTable } from './components/ResultsTable'
 
 function App() {
   const [visible, setVisible] = useState(false)
@@ -195,126 +176,13 @@ function App() {
   )
 }
 
-function FloatingButton({ onClick, loading }: { onClick: () => void; loading: boolean }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        position: 'fixed', right: 16, bottom: 16, padding: '10px 14px', borderRadius: 20,
-        background: '#1677ff', color: '#fff', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.2)', cursor: 'pointer', zIndex: 2147483647
-      }}
-      title="ZenTao Monthly Consumed Report"
-    >
-      {loading ? 'Loading…' : 'Report'}
-    </button>
-  )
-}
 
-function Panel({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
-  return (
-    <div style={{ position: 'fixed', right: 16, bottom: 64, width: 820, maxHeight: '70vh', overflow: 'auto', background: '#fff', border: '1px solid #ddd', borderRadius: 8, padding: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.2)', zIndex: 2147483647 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <div style={{ fontWeight: 700 }}>ZenTao Monthly Consumed Report</div>
-        <button onClick={onClose} style={{ border: 'none', background: 'transparent', fontSize: 18, cursor: 'pointer' }}>✕</button>
-      </div>
-      {children}
-    </div>
-  )
-}
 
-function CheckboxMultiSelect({ options, values, onChange }: { options: Array<{ value: any; label: string }>; values: any[]; onChange: (v: any[]) => void }) {
-  const [open, setOpen] = useState(false)
-  const [keyword, setKeyword] = useState('')
-  const containerRef = useRef<HTMLDivElement | null>(null)
 
-  useEffect(() => {
-    const onDocClick = (e: MouseEvent) => {
-      if (!containerRef.current) return
-      if (!containerRef.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('click', onDocClick)
-    return () => document.removeEventListener('click', onDocClick)
-  }, [])
 
-  const filtered = useMemo(() => {
-    if (!keyword.trim()) return options
-    const k = keyword.trim().toLowerCase()
-    return options.filter(o => o.label.toLowerCase().includes(k) || String(o.value).toLowerCase().includes(k))
-  }, [options, keyword])
 
-  const toggle = (val: any) => {
-    const set = new Set(values)
-    if (set.has(val)) set.delete(val)
-    else set.add(val)
-    onChange(Array.from(set))
-  }
 
-  const clearAll = () => onChange([])
-  const selectAllFiltered = () => onChange(Array.from(new Set([...values, ...filtered.map(f => f.value)])))
 
-  return (
-    <div ref={containerRef} style={{ position: 'relative', display: 'inline-block' }}>
-      <button type="button" onClick={(e) => { e.stopPropagation(); setOpen(o => !o) }} style={{ minWidth: 240 }}>
-        {values.length ? `Selected (${values.length})` : 'Select...'}
-      </button>
-      {open && (
-        <div style={{ position: 'absolute', top: '100%', left: 0, width: 320, background: '#fff', border: '1px solid #ddd', borderRadius: 4, padding: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 2147483647 }} onClick={e => e.stopPropagation()}>
-          <input placeholder="Search..." value={keyword} onChange={e => setKeyword(e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
-          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-            <button type="button" onClick={selectAllFiltered}>Select filtered</button>
-            <button type="button" onClick={clearAll}>Clear</button>
-          </div>
-          <div style={{ maxHeight: 220, overflow: 'auto', paddingRight: 4 }}>
-            {filtered.map(o => (
-              <label key={String(o.value)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
-                <input type="checkbox" checked={values.includes(o.value)} onChange={() => toggle(o.value)} />
-                <span title={o.label} style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{o.label}</span>
-              </label>
-            ))}
-            {!filtered.length && <div style={{ color: '#999' }}>No results</div>}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function ResultsTable({ rows }: { rows: Array<{ realname: string; hours: number }> }) {
-  const total = rows.reduce((s, r) => s + r.hours, 0)
-  return (
-    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-      <thead>
-        <tr>
-          <th style={thStyle}>用户名称</th>
-          <th style={thStyle}>消耗工时（小时）</th>
-          <th style={thStyle}>消耗工时（天，8小时/天）</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((r, idx) => (
-          <tr key={idx}>
-            <td style={tdStyle}>{r.realname}</td>
-            <td style={tdStyle}>{formatHours(r.hours)}</td>
-            <td style={tdStyle}>{toDays(r.hours)}</td>
-          </tr>
-        ))}
-      </tbody>
-      <tfoot>
-        <tr>
-          <td style={tdStyle}>合计</td>
-          <td style={tdStyle}>{formatHours(total)}</td>
-          <td style={tdStyle}>{toDays(total)}</td>
-        </tr>
-      </tfoot>
-    </table>
-  )
-}
-
-const thStyle: React.CSSProperties = { textAlign: 'left', borderBottom: '1px solid #eee', padding: '8px 6px', background: '#fafafa' }
-const tdStyle: React.CSSProperties = { borderBottom: '1px solid #f3f3f3', padding: '8px 6px' }
-
-function pad2(n: number): string { return n < 10 ? '0' + n : String(n) }
-function formatMonth(d: Date): string { return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}` }
 
 function mount() {
   // 只在主窗口中挂载，避免在iframe中重复挂载

@@ -51,4 +51,6 @@ export type UserRef = {
   realname: string
 }
 
+export type Aggregation = Map<string, number> // account -> hours
+
 
