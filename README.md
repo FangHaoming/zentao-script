@@ -2,6 +2,8 @@
 
 一个基于 React 的浮动面板用户脚本，用于统计指定月份内已完成任务的工时消耗。支持 Tampermonkey/Greasemonkey。
 
+![example](./img/example.png)
+
 ## 🚀 快速开始
 
 ### 安装依赖
