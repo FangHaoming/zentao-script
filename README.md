@@ -31,7 +31,7 @@ yarn build
 
 1. 访问 `禅道（ZenTao）` 的任意页面
 2. 点击页面右下角的浮动"报告"按钮打开配置面板
-3. 输入您的 API Token 并点击保存
+3. 输入您的 API Token 并点击保存(可选，脚本默认使用当前已登陆的token)
 4. 脚本将使用 `Token: <your token>` 头部进行 API 认证
 5. API 基础地址：`http://<your domain>/zentao/api.php/v1`
 
