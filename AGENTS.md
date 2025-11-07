@@ -1,4 +1,4 @@
-# AGENTS.md
+# Agent Guidelines for ZenTao Userscript
 
 ## Build Commands
 - `yarn dev` - Start development server with hot reload
@@ -7,44 +7,37 @@
 
 ## Code Style Guidelines
 
-### Imports & Dependencies
-- Use ES6 imports with explicit file extensions for TypeScript files
-- Group imports: React hooks first, then local modules, then types
-- Import types separately: `import type { ... } from './types'`
+### Imports & Formatting
+- Use ES6 imports with explicit file extensions for relative imports
+- Import React components directly: `import { Component } from './Component'`
+- No default exports - use named exports exclusively
+- Inline styles with React style objects (no CSS files)
 
-### TypeScript & Types
-- Strict TypeScript enabled - all types must be defined
-- Use interfaces for object shapes, types for unions/primitives
-- Prefer `const` assertions and `as const` for readonly data
-- Use generic types with proper constraints (`TKey extends string`)
+### TypeScript
+- Strict mode enabled - all types must be properly defined
+- Use interface for object shapes, type for unions/primitives
+- Generic types: `PagedResponse<TItem, TKey extends string>`
+- Prefer explicit return types for functions
 
 ### Naming Conventions
-- Components: PascalCase (React functional components)
-- Functions: camelCase with descriptive verbs (`fetchUsers`, `formatHours`)
-- Constants: UPPER_SNAKE_CASE for exports (`BASE_URL`, `STORAGE_KEYS`)
-- Variables: camelCase, prefer descriptive names over abbreviations
+- Components: PascalCase (Panel.tsx, ResultsTable.tsx)
+- Functions/variables: camelCase (formatHours, httpGet)
+- Constants: UPPER_SNAKE_CASE (BASE_URL)
+- Types: PascalCase (User, Project, Task)
 
 ### Error Handling
-- Always handle Promise rejections with `.catch()` or try/catch
-- Use meaningful error messages with context
-- Gracefully handle localStorage failures with try/catch blocks
-- Validate API responses and provide fallbacks
+- Always handle fetch errors with try/catch
+- Throw descriptive errors with status codes and context
+- Use proper error boundaries in React components
 
-### React Patterns
-- Use functional components with hooks exclusively
-- Implement proper dependency arrays in useEffect
-- Use useMemo for expensive computations, useState for state
-- Prefer inline styles for userscript (no CSS modules)
-- Handle cleanup in useEffect (remove event listeners)
-
-### API & Data
-- Use fetch API with proper headers and error handling
-- Implement concurrency limiting for bulk operations
-- Store API responses in appropriate state variables
-- Use localStorage for persistence with error handling
+### Architecture
+- Separate API calls to `src/api/` directory
+- Custom hooks in `src/hooks/` for stateful logic
+- Utility functions in `src/utils/` for pure functions
+- Types centralized in `src/types.ts`
 
 ### Userscript Specific
-- Check `window.self !== window.top` to avoid iframe mounting
+- Entry point: `src/app.tsx` with mount() function
+- Avoid iframe mounting with `window.self !== window.top` check
+- Use high z-index (2147483647) for floating elements
 - Clean up existing containers on HMR reload
-- Use high z-index values (2147483647) for UI elements
-- Support both dev and production API endpoints via BASE_URL

@@ -9,7 +9,7 @@ export default defineConfig({
   },
   plugins: [
     monkey({
-      entry: 'src/userscript.tsx',
+      entry: 'src/app.tsx',
       userscript: {
         name: 'ZenTao Monthly Consumed Report',
         namespace: 'zentao-userscript',
