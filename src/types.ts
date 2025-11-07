@@ -29,6 +29,7 @@ export type Task = {
   closedDate?: string
   assignedTo?: UserRef
   realStarted?: string
+  execution?: number // 所属执行
 }
 
 export type PagedResponse<TItem, TKey extends string> = {

@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { DEFAULT_CONCURRENCY, STORAGE_KEYS } from './constants'
-import { fetchAllExecutions, fetchAllTasks, fetchProjects, fetchUsers, isDoneStartedInMonth, taskConsumerAccount } from './api'
-import type { Aggregation, Execution, Filters, Project, User } from './types'
-import { formatMonth } from './utils'
-import { useLocalStorage } from './hooks/useLocalStorage'
-import { FloatingButton } from './components/FloatingButton'
-import { Panel } from './components/Panel'
-import { CheckboxMultiSelect } from './components/CheckboxMultiSelect'
-import { ResultsTable } from './components/ResultsTable'
+import { DEFAULT_CONCURRENCY, STORAGE_KEYS } from '../constants'
+import { fetchAllExecutions, fetchAllTasks, fetchProjects, fetchUsers, isDoneStartedInMonth, taskConsumerAccount } from '../api'
+import type { Aggregation, Execution, Filters, Project, User } from '../types'
+import { formatMonth } from '../utils'
+import { useLocalStorage } from '../hooks/useLocalStorage'
+import { FloatingButton } from '../components/FloatingButton'
+import { Panel } from '../components/Panel'
+import { CheckboxMultiSelect } from '../components/CheckboxMultiSelect'
+import { ResultsTable } from '../components/ResultsTable'
 
 export function MonthlyConsume() {
   const [visible, setVisible] = useState(false)

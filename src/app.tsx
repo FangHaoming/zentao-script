@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client'
-import { MonthlyConsume } from './monthly-consume'
+import { MonthlyConsume } from './views/monthly-consume'
 
 function App() {
   return (
