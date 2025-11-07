@@ -1,6 +1,5 @@
 import { DEFAULT_CONCURRENCY } from './constants'
 import type { Execution, Task } from './types'
-import { setToken } from './lib/http'
 import { ConcurrencyPool } from './lib/concurrency'
 import { fetchExecutions, fetchTasks, fetchUsers, fetchProjects } from './api/endpoints'
 import { isDoneStartedInMonth, taskConsumerAccount } from './utils/taskUtils'
@@ -35,6 +34,6 @@ export async function fetchAllTasks(executionIds: number[], onBatch?: (tasks: Ta
 }
 
 // 重新导出所有必要的函数
-export { setToken, fetchUsers, fetchProjects, fetchExecutions, fetchTasks, isDoneStartedInMonth, taskConsumerAccount }
+export { fetchUsers, fetchProjects, fetchExecutions, fetchTasks, isDoneStartedInMonth, taskConsumerAccount }
 
 

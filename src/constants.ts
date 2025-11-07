@@ -3,7 +3,7 @@ export const BASE_URL = (typeof window !== 'undefined' && /localhost|127\.0\.0\.
   : `${location.protocol}//${location.hostname}/zentao/api.php/v1`
 
 export const STORAGE_KEYS = {
-  token: '',
+  token: 'zentao_token',
   filters: 'zentao_filters'
 } as const
 

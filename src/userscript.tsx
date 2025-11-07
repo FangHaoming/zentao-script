@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { DEFAULT_CONCURRENCY, STORAGE_KEYS } from './constants'
-import { fetchAllExecutions, fetchAllTasks, fetchProjects, fetchUsers, isDoneStartedInMonth, setToken, taskConsumerAccount } from './api'
+import { fetchAllExecutions, fetchAllTasks, fetchProjects, fetchUsers, isDoneStartedInMonth, taskConsumerAccount } from './api'
 import type { Aggregation, Execution, Filters, Project, User } from './types'
-import { getCookieValue, formatMonth } from './utils'
+import { formatMonth } from './utils'
 import { useLocalStorage } from './hooks/useLocalStorage'
 import { FloatingButton } from './components/FloatingButton'
 import { Panel } from './components/Panel'
@@ -12,13 +12,6 @@ import { ResultsTable } from './components/ResultsTable'
 
 function App() {
   const [visible, setVisible] = useState(false)
-  const [tokenInput, setTokenInput] = useState(() => {
-    const stored = localStorage.getItem(STORAGE_KEYS.token)
-    if (stored) return stored
-    // 自动从cookie获取zentaosid
-    const zentaosid = getCookieValue('zentaosid')
-    return zentaosid || ''
-  })
   const [users, setUsers] = useState<User[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [executions, setExecutions] = useState<Execution[]>([])
@@ -52,13 +45,6 @@ function App() {
     entries.sort((a, b) => b.hours - a.hours)
     return entries
   }, [agg, filters.userAccounts, usersByAccount])
-
-  const selectedExecutions = useMemo(() => executions.filter(e => !filters.executionIds.length || filters.executionIds.includes(e.id)), [executions, filters.executionIds])
-
-  const handleSaveToken = () => {
-    if (!tokenInput.trim()) return
-    setToken(tokenInput.trim())
-  }
 
   const refreshUsersAndProjects = async () => {
     setProgressNote('Loading users and projects...')
@@ -114,6 +100,7 @@ function App() {
       }, DEFAULT_CONCURRENCY)
       setProgressNote('')
     } catch (e) {
+      console.error(e)
       setProgressNote(String(e))
     } finally {
       setLoading(false)
@@ -125,16 +112,11 @@ function App() {
       <FloatingButton onClick={() => setVisible(v => !v)} loading={loading} />
       {visible && (
         <Panel onClose={() => setVisible(false)}>
+          <div style={{ marginBottom: '12px' }}>
+            <label style={{ fontWeight: 600 }}>Month</label>
+            <input style={{ marginLeft: 8 }} type="month" value={filters.month} onChange={e => setFilters({ ...filters, month: e.target.value })} />
+          </div>
           <div style={{ display: 'flex', gap: 12, alignItems: 'end', flexWrap: 'wrap' }}>
-            <div>
-              <label style={{ fontWeight: 600 }}>Token</label>
-              <input style={{ marginLeft: 8, width: 280 }} value={tokenInput} onChange={e => setTokenInput(e.target.value)} placeholder="Paste Token" />
-              <button style={{ marginLeft: 8 }} onClick={handleSaveToken}>Save</button>
-            </div>
-            <div>
-              <label style={{ fontWeight: 600 }}>Month</label>
-              <input style={{ marginLeft: 8 }} type="month" value={filters.month} onChange={e => setFilters({ ...filters, month: e.target.value })} />
-            </div>
             <div>
               <label style={{ fontWeight: 600 }}>Projects</label>
               <CheckboxMultiSelect
@@ -190,17 +172,17 @@ function mount() {
     console.log('ZenTao userscript: Skip mounting in iframe')
     return
   }
-  
+
   const containerId = 'zentao-userscript-container'
-  
+
   // 清理所有已存在的容器（处理HMR重载）
   const existingContainers = document.querySelectorAll(`#${containerId}`)
   existingContainers.forEach(el => el.remove())
-  
+
   const container = document.createElement('div')
   container.id = containerId
   document.body.appendChild(container)
-  
+
   const root = createRoot(container)
   root.render(<App />)
 }
