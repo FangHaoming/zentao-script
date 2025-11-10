@@ -32,6 +32,18 @@ export type Task = {
   execution?: number // 所属执行
 }
 
+export type Story = {
+  id: number
+  title: string
+  status?: string
+  execution?: number // 所属执行
+  openedBy?: UserRef
+  openedDate?: string
+  assignedTo?: UserRef
+  pri?: number
+  estimate?: number
+}
+
 export type PagedResponse<TItem, TKey extends string> = {
   page: number
   total: number
@@ -53,5 +65,33 @@ export type UserRef = {
 }
 
 export type Aggregation = Map<string, number> // account -> hours
+
+export type ExcelInfo = {
+  id: number
+  users: Array<{
+    prefix: string
+    realname: string
+    account: string
+  }>
+  deadline: string
+  estStarted: string
+  taskName: string
+  execution: string
+}
+
+export type ColumnMapping = {
+  idColumn: string
+  deadlineColumn: string
+  prefixColumns: string[]
+}
+
+export type TaskCreationParams = {
+  story: number
+  name: string
+  assignedTo: string
+  type: string
+  estStarted: string
+  deadline: string
+}
 
 

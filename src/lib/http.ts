@@ -15,3 +15,20 @@ export async function httpGet<T>(path: string, query?: Record<string, string | n
   }
   return res.json() as Promise<T>
 }
+
+export async function httpPost<T>(path: string, body: any): Promise<T> {
+  const base = BASE_URL.startsWith('http') ? BASE_URL : (typeof window !== 'undefined' ? new URL(BASE_URL, window.location.origin).toString() : BASE_URL)
+  const url = new URL(base + path)
+  const res = await fetch(url.toString(), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Request failed ${res.status}: ${text}`)
+  }
+  return res.json() as Promise<T>
+}

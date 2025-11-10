@@ -1,9 +1,11 @@
 import { createRoot } from 'react-dom/client'
 import { MonthlyConsume } from './views/monthly-consume'
+import { CreateTaskPanel } from './views/create-task-panel'
 
 function App() {
   return (
     <>
+      <CreateTaskPanel />
       <MonthlyConsume />
     </>
   )

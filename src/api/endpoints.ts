@@ -1,5 +1,6 @@
 import { fetchAllPages } from '../lib/pagination'
-import type { Execution, Project, Task, User } from '../types'
+import { httpPost } from '../lib/http'
+import type { Execution, Project, Task, User, TaskCreationParams, Story } from '../types'
 
 export async function fetchUsers(): Promise<User[]> {
   const { items } = await fetchAllPages('/users', 'users', { browse: '' })
@@ -19,4 +20,13 @@ export async function fetchExecutions(projectId: number): Promise<Execution[]> {
 export async function fetchTasks(executionId: number): Promise<Task[]> {
   const { items } = await fetchAllPages(`/executions/${executionId}/tasks`, 'tasks')
   return items as unknown as Task[]
+}
+
+export async function fetchStories(executionId: number): Promise<Story[]> {
+  const { items } = await fetchAllPages(`/executions/${executionId}/stories`, 'stories')
+  return items as unknown as Story[]
+}
+
+export async function createTask(executionId: number, params: TaskCreationParams): Promise<any> {
+  return httpPost(`/executions/${executionId}/tasks`, params)
 }
