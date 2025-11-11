@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { DEFAULT_CONCURRENCY, STORAGE_KEYS } from '../constants'
 import { fetchAllExecutions, fetchProjects, fetchUsers } from '../api'
 import { createTask, fetchStories } from '../api/endpoints'
@@ -33,6 +33,7 @@ export function CreateTaskPanel() {
   })
   const [filterByUsers, setFilterByUsers] = useState(true)
   const [createdTasks, setCreatedTasks] = useLocalStorage<string[]>(STORAGE_KEYS.createdTasks, [])
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const accountByRealName = useMemo(() => {
     const m = new Map<string, string>()
@@ -266,7 +267,7 @@ export function CreateTaskPanel() {
         }}
       />
       {visible && (
-        <Panel onClose={() => setVisible(false)}>
+        <Panel key="create"  onClose={() => setVisible(false)}>
           <div style={{ marginBottom: '12px' }}>
             <label style={{ fontWeight: 600 }}>Month</label>
             <input style={{ marginLeft: 8 }} type="month" value={filters.month} onChange={e => setFilters({ ...filters, month: e.target.value })} />
@@ -312,7 +313,31 @@ export function CreateTaskPanel() {
           </div>
           <div style={{ marginTop: 16, marginBottom: 12 }}>
             <label style={{ fontWeight: 600, display: 'block', marginBottom: 8 }}>Upload Excel/CSV File</label>
-            <input type="file" accept=".csv,.xlsx,.xls" onChange={handleFileUpload} />
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', height: 'max-content' }}>
+              <input 
+                ref={fileInputRef}
+                type="file" 
+                accept=".csv,.xlsx,.xls" 
+                onChange={handleFileUpload} 
+              />
+              {uploadedFile && (
+                <>
+                  <button
+                    onClick={() => {
+                      setUploadedFile(null)
+                      setExcelInfo([])
+                      setProgressNote('File cleared')
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = ''
+                      }
+                    }}
+                    style={{ padding: '4px 12px', fontSize: '12px' }}
+                  >
+                    Clear
+                  </button>
+                </>
+              )}
+            </div>
             <div style={{ fontSize: '12px', color: '#666', marginTop: 4 }}>
               Supports CSV, Excel (.xlsx, .xls) files with Chinese characters
             </div>
@@ -390,7 +415,6 @@ export function CreateTaskPanel() {
                   await compute()
                 }}
                 style={{ padding: '4px 12px' }}
-                disabled={excelInfo.length === 0}
               >
                 Save Mapping & Refresh Table
               </button>
