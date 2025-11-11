@@ -131,21 +131,21 @@ export function CreateTaskPanel() {
     const params = []
     for (const item of excelInfo) {
       if (!item.execution || !item.taskName) continue
-      
+
       for (const user of item.users) {
         if (!user.account) continue
-        
+
         // Apply user filter if enabled
         if (filterByUsers && filters.userAccounts.length > 0 && !filters.userAccounts.includes(user.account)) {
           continue
         }
-        
+
         // Check if task already created
         const taskKey = `${item.id}-${item.execution}-${user.account}`
         if (createdTasks.includes(taskKey)) {
           continue
         }
-        
+
         params.push({
           executionId: parseInt(item.execution),
           story: item.id,
@@ -384,33 +384,33 @@ export function CreateTaskPanel() {
               </button>
             </div>
             <div style={{ marginTop: 8 }}>
-              <button 
+              <button
                 onClick={async () => {
                   await saveColumnMapping()
                   await compute()
-                }} 
+                }}
                 style={{ padding: '4px 12px' }}
                 disabled={excelInfo.length === 0}
               >
                 Save Mapping & Refresh Table
               </button>
-               <button
-                 style={{ marginLeft: 8 }}
-                 onClick={createTasks}
-                 disabled={excelInfo.length === 0 || loading}
-               >
-                 Create Tasks
-               </button>
-               <button
-                 style={{ marginLeft: 8 }}
-                 onClick={() => {
-                   setCreatedTasks([])
-                   setProgressNote('Created tasks cache cleared')
-                 }}
-                 disabled={createdTasks.length === 0}
-               >
-                 Clear Cache ({createdTasks.length})
-               </button>
+              <button
+                style={{ marginLeft: 8 }}
+                onClick={createTasks}
+                disabled={excelInfo.length === 0 || loading}
+              >
+                Create Tasks
+              </button>
+              <button
+                style={{ marginLeft: 8 }}
+                onClick={() => {
+                  setCreatedTasks([])
+                  setProgressNote('Created tasks cache cleared')
+                }}
+                disabled={createdTasks.length === 0}
+              >
+                Clear Cache ({createdTasks.length})
+              </button>
             </div>
             {progressNote && <div style={{ marginTop: 8, color: '#8a6d3b' }}>{progressNote}</div>}
           </div>
@@ -418,9 +418,9 @@ export function CreateTaskPanel() {
           {excelInfo.length > 0 && (
             <div style={{ marginTop: 16, marginBottom: 12 }}>
               <label style={{ fontWeight: 600, display: 'block', marginBottom: 8 }}>
-                Excel Data ({filterByUsers ? 
-                  excelInfo.filter(item => 
-                    item.users.some(user => 
+                Excel Data ({filterByUsers ?
+                  excelInfo.filter(item =>
+                    item.users.some(user =>
                       user.account && (filters.userAccounts.length === 0 || filters.userAccounts.includes(user.account))
                     )
                   ).length : excelInfo.length} items)
@@ -442,72 +442,67 @@ export function CreateTaskPanel() {
                     {excelInfo
                       .filter(item => {
                         if (!filterByUsers) return true
-                        return item.users.some(user => 
+                        return item.users.some(user =>
                           user.account && (filters.userAccounts.length === 0 || filters.userAccounts.includes(user.account))
                         )
                       })
-                      .slice(0, 10)
                       .map((item, index) => (
-                      <tr key={index}>
-                        <td style={{ border: '1px solid #ddd', padding: 4 }}>{item.id}</td>
-                        <td style={{ border: '1px solid #ddd', padding: 4 }}>{item.taskName || 'Loading...'}</td>
-                        <td style={{ border: '1px solid #ddd', padding: 4 }}>
-                          <input
-                            type="date"
-                            value={item.estStarted}
-                            onChange={e => {
-                              const updated = [...excelInfo]
-                              updated[index] = { ...item, estStarted: e.target.value }
-                              setExcelInfo(updated)
-                            }}
-                            style={{ width: '100%', border: 'none', padding: 2 }}
-                          />
-                        </td>
-                        <td style={{ border: '1px solid #ddd', padding: 4 }}>
-                          <input
-                            type="date"
-                            value={item.deadline}
-                            onChange={e => {
-                              const updated = [...excelInfo]
-                              updated[index] = { ...item, deadline: e.target.value }
-                              setExcelInfo(updated)
-                            }}
-                            style={{ width: '100%', border: 'none', padding: 2 }}
-                          />
-                        </td>
-                         {columnMapping.prefixColumns.map((prefix, colIndex) => {
-                           const user = item.users.find(u => u.prefix === prefix)
-                           const shouldHighlight = filterByUsers && user && user.account && 
-                             filters.userAccounts.length > 0 && filters.userAccounts.includes(user.account)
-                           const taskKey = user && user.account ? `${item.id}-${item.execution}-${user.account}` : null
-                           const isTaskCreated = taskKey && createdTasks.includes(taskKey)
-                           return (
-                             <td 
-                               key={colIndex} 
-                               style={{ 
-                                 border: '1px solid #ddd', 
-                                 padding: 4,
-                                 backgroundColor: isTaskCreated ? '#ffcccc' : (shouldHighlight ? '#e8f5e8' : 'transparent')
-                               }}
-                             >
-                               {user ? `${user.realname} (${user.account || 'N/A'})${isTaskCreated ? ' ✓' : ''}` : ''}
-                             </td>
-                           )
-                         })}
-                      </tr>
-                    ))}
+                        <tr key={item.id}>
+                          <td style={{ border: '1px solid #ddd', padding: 4 }}>{item.id}</td>
+                          <td style={{ border: '1px solid #ddd', padding: 4 }}>{item.taskName || 'Loading...'}</td>
+                          <td style={{ border: '1px solid #ddd', padding: 4 }}>
+                            <input
+                              type="date"
+                              value={item.estStarted}
+                              onChange={e => {
+                                const updated = excelInfo.map(excelItem => 
+                                  excelItem.id === item.id 
+                                    ? { ...excelItem, estStarted: e.target.value }
+                                    : excelItem
+                                )
+                                setExcelInfo(updated)
+                              }}
+                              style={{ width: '100%', border: 'none', padding: 2 }}
+                            />
+                          </td>
+                          <td style={{ border: '1px solid #ddd', padding: 4 }}>
+                            <input
+                              type="date"
+                              value={item.deadline}
+                              onChange={e => {
+                                const updated = excelInfo.map(excelItem => 
+                                  excelItem.id === item.id 
+                                    ? { ...excelItem, deadline: e.target.value }
+                                    : excelItem
+                                )
+                                setExcelInfo(updated)
+                              }}
+                              style={{ width: '100%', border: 'none', padding: 2 }}
+                            />
+                          </td>
+                          {columnMapping.prefixColumns.map((prefix, colIndex) => {
+                            const user = item.users.find(u => u.prefix === prefix)
+                            const shouldHighlight = filterByUsers && user && user.account &&
+                              filters.userAccounts.length > 0 && filters.userAccounts.includes(user.account)
+                            const taskKey = user && user.account ? `${item.id}-${item.execution}-${user.account}` : null
+                            const isTaskCreated = taskKey && createdTasks.includes(taskKey)
+                            return (
+                              <td
+                                key={colIndex}
+                                style={{
+                                  border: '1px solid #ddd',
+                                  padding: 4,
+                                  backgroundColor: isTaskCreated ? '#ffcccc' : (shouldHighlight ? '#e8f5e8' : 'transparent')
+                                }}
+                              >
+                                {user ? `${user.realname} (${user.account || 'N/A'})${isTaskCreated ? ' ✓' : ''}` : ''}
+                              </td>
+                            )
+                          })}
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
-                {excelInfo.length > 10 && (
-                  <div style={{ textAlign: 'center', padding: 8, color: '#666' }}>
-                    ... and {filterByUsers ? 
-                      excelInfo.filter(item => 
-                        item.users.some(user => 
-                          user.account && (filters.userAccounts.length === 0 || filters.userAccounts.includes(user.account))
-                        )
-                      ).length - 10 : excelInfo.length - 10} more items
-                  </div>
-                )}
               </div>
             </div>
           )}
