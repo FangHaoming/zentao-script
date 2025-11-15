@@ -78,7 +78,7 @@ export function parseCSV(content: string, mapping: ColumnMapping): ExcelInfo[] {
     const id = parseInt(values[idIndex])
     const deadline = values[deadlineIndex]
     
-    if (isNaN(id) || !deadline) continue
+    if (isNaN(id)) continue
     
     const users = prefixIndices
       .filter(({ index }) => index !== -1 && values[index])
