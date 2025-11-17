@@ -1,7 +1,7 @@
 import type { Task } from '../types'
 
 export function isDoneStartedInMonth(task: Task, month: string): boolean {
-  if ((task.status || '').toLowerCase() !== 'done') return false
+  if (!['done', 'closed'].includes((task.status || '').toLowerCase())) return false
   const start = new Date(month + '-01T00:00:00')
   if (isNaN(start.getTime())) return false
   const end = new Date(start)
