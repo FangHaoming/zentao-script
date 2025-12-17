@@ -16,8 +16,9 @@ export default defineConfig({
         version: '0.1.0',
         description: 'Floating report to sum consumed hours of finished tasks per user for selected month',
         author: 'FangHaoming',
-        match: [
-          '*://*/zentao/*'
+        // Use @include so that any URL whose host/path contains "zentao" will match,
+        include: [
+          '*://*zentao*/*'
         ],
         grant: 'none'
       },
