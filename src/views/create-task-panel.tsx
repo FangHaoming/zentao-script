@@ -7,6 +7,7 @@ import { formatMonth } from '../utils'
 import { parseCSV, detectAndParseFile, formatDate } from '../utils/excelUtils'
 import { downloadExcelTemplate } from '../utils/excelParser'
 import { useLocalStorage } from '../hooks/useLocalStorage'
+import { useShepherdTour } from '../hooks/useShepherdTour'
 import { FloatingButton } from '../components/FloatingButton'
 import { Panel } from '../components/Panel'
 import { CheckboxMultiSelect } from '../components/CheckboxMultiSelect'
@@ -34,6 +35,179 @@ export function CreateTaskPanel() {
   const [filterByUsers, setFilterByUsers] = useState(true)
   const [createdTasks, setCreatedTasks] = useLocalStorage<string[]>(STORAGE_KEYS.createdTasks, [])
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const { startTour } = useShepherdTour({
+    steps: [
+      {
+        id: 'month-selector',
+        title: '选择月份',
+        text: '首先选择要创建任务的月份，系统会根据该月份设置任务的开始日期。',
+        attachTo: {
+          element: '[data-tour="month-selector"]',
+          on: 'bottom'
+        },
+        buttons: [
+          {
+            text: '下一步',
+            action: (tour) => tour.next()
+          }
+        ]
+      },
+      {
+        id: 'project-selector',
+        title: '选择项目',
+        text: '选择要创建任务的项目。可以选择多个项目，也可以不选择（表示所有项目）。',
+        attachTo: {
+          element: '[data-tour="project-selector"]',
+          on: 'bottom'
+        },
+        buttons: [
+          {
+            text: '上一步',
+            action: (tour) => tour.back()
+          },
+          {
+            text: '下一步',
+            action: (tour) => tour.next()
+          }
+        ]
+      },
+      {
+        id: 'execution-selector',
+        title: '选择执行',
+        text: '选择要创建任务的执行（迭代）。如果不选择，将使用所选项目下的所有执行。',
+        attachTo: {
+          element: '[data-tour="execution-selector"]',
+          on: 'bottom'
+        },
+        buttons: [
+          {
+            text: '上一步',
+            action: (tour) => tour.back()
+          },
+          {
+            text: '下一步',
+            action: (tour) => tour.next()
+          }
+        ]
+      },
+      {
+        id: 'user-selector',
+        title: '选择用户',
+        text: '选择要创建任务的用户。如果不选择，将为所有用户创建任务。',
+        attachTo: {
+          element: '[data-tour="user-selector"]',
+          on: 'bottom'
+        },
+        buttons: [
+          {
+            text: '上一步',
+            action: (tour) => tour.back()
+          },
+          {
+            text: '下一步',
+            action: (tour) => tour.next()
+          }
+        ]
+      },
+      {
+        id: 'filter-by-users',
+        title: '用户过滤选项',
+        text: '勾选此选项后，只有在"Users"中选择的用户才会创建任务。取消勾选则为所有用户创建任务。',
+        attachTo: {
+          element: '[data-tour="filter-by-users"]',
+          on: 'bottom'
+        },
+        buttons: [
+          {
+            text: '上一步',
+            action: (tour) => tour.back()
+          },
+          {
+            text: '下一步',
+            action: (tour) => tour.next()
+          }
+        ]
+      },
+      {
+        id: 'file-upload',
+        title: '上传文件',
+        text: '上传包含任务信息的 Excel 或 CSV 文件。支持中文列名，可以下载模板查看格式要求。',
+        attachTo: {
+          element: '[data-tour="file-upload"]',
+          on: 'bottom'
+        },
+        buttons: [
+          {
+            text: '上一步',
+            action: (tour) => tour.back()
+          },
+          {
+            text: '下一步',
+            action: (tour) => tour.next()
+          }
+        ]
+      },
+      {
+        id: 'column-mapping',
+        title: '列映射配置',
+        text: '配置 Excel 文件中的列名映射。设置 ID 列、截止日期列和前缀列（如前端、后台、脚本等）。',
+        attachTo: {
+          element: '[data-tour="column-mapping"]',
+          on: 'bottom'
+        },
+        buttons: [
+          {
+            text: '上一步',
+            action: (tour) => tour.back()
+          },
+          {
+            text: '下一步',
+            action: (tour) => tour.next()
+          }
+        ]
+      },
+      {
+        id: 'action-buttons',
+        title: '操作按钮',
+        text: '点击"Save Mapping & Refresh Table"保存列映射并刷新表格；点击"Create Tasks"批量创建任务；点击"Clear Cache"清除已创建任务的缓存。',
+        attachTo: {
+          element: '[data-tour="action-buttons"]',
+          on: 'top'
+        },
+        buttons: [
+          {
+            text: '上一步',
+            action: (tour) => tour.back()
+          },
+          {
+            text: '下一步',
+            action: (tour) => tour.next()
+          }
+        ]
+      },
+      {
+        id: 'excel-data-table',
+        title: '数据预览表格',
+        text: '这里显示从 Excel 文件解析出的数据。可以编辑开始日期和截止日期。已创建的任务会显示红色背景，选中的用户会显示绿色背景。',
+        attachTo: {
+          element: '[data-tour="excel-data-table"]',
+          on: 'top'
+        },
+        buttons: [
+          {
+            text: '上一步',
+            action: (tour) => tour.back()
+          },
+          {
+            text: '完成',
+            action: (tour) => tour.complete()
+          }
+        ]
+      }
+    ],
+    showArrow: false
+  })
 
   const accountByRealName = useMemo(() => {
     const m = new Map<string, string>()
@@ -268,12 +442,34 @@ export function CreateTaskPanel() {
       />
       {visible && (
         <Panel key="create"  onClose={() => setVisible(false)}>
-          <div style={{ marginBottom: '12px' }}>
-            <label style={{ fontWeight: 600 }}>Month</label>
-            <input style={{ marginLeft: 8 }} type="month" value={filters.month} onChange={e => setFilters({ ...filters, month: e.target.value })} />
+          <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <label style={{ fontWeight: 600 }}>Month</label>
+              <input 
+                data-tour="month-selector"
+                style={{ marginLeft: 8 }} 
+                type="month" 
+                value={filters.month} 
+                onChange={e => setFilters({ ...filters, month: e.target.value })} 
+              />
+            </div>
+            <button 
+              onClick={startTour}
+              style={{ 
+                padding: '6px 12px', 
+                background: '#52c41a', 
+                color: '#fff', 
+                border: 'none', 
+                borderRadius: 4, 
+                cursor: 'pointer',
+                fontSize: 12
+              }}
+            >
+              📖 开始指引
+            </button>
           </div>
           <div style={{ display: 'flex', gap: 12, alignItems: 'end', flexWrap: 'wrap' }}>
-            <div>
+            <div data-tour="project-selector">
               <label style={{ fontWeight: 600 }}>Projects</label>
               <CheckboxMultiSelect
                 options={projects.map(p => ({ value: p.id, label: p.name }))}
@@ -281,7 +477,7 @@ export function CreateTaskPanel() {
                 onChange={(vals) => setFilters({ ...filters, projectIds: vals, executionIds: [] })}
               />
             </div>
-            <div>
+            <div data-tour="execution-selector">
               <label style={{ fontWeight: 600 }}>Executions</label>
               <CheckboxMultiSelect
                 options={executions
@@ -291,7 +487,7 @@ export function CreateTaskPanel() {
                 onChange={(vals) => setFilters({ ...filters, executionIds: vals })}
               />
             </div>
-            <div>
+            <div data-tour="user-selector">
               <label style={{ fontWeight: 600 }}>Users</label>
               <CheckboxMultiSelect
                 options={userList.map(u => ({ value: u.account, label: `${u.realname} (${u.account})` }))}
@@ -299,7 +495,7 @@ export function CreateTaskPanel() {
                 onChange={(vals) => setFilters({ ...filters, userAccounts: vals })}
               />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} data-tour="filter-by-users">
               <input
                 type="checkbox"
                 id="filterByUsers"
@@ -311,7 +507,7 @@ export function CreateTaskPanel() {
               </label>
             </div>
           </div>
-          <div style={{ marginTop: 16, marginBottom: 12 }}>
+          <div style={{ marginTop: 16, marginBottom: 12 }} data-tour="file-upload">
             <label style={{ fontWeight: 600, display: 'block', marginBottom: 8 }}>Upload Excel/CSV File</label>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', height: 'max-content' }}>
               <input 
@@ -354,7 +550,7 @@ export function CreateTaskPanel() {
             </div>
           </div>
 
-          <div style={{ marginTop: 16, marginBottom: 12 }}>
+          <div style={{ marginTop: 16, marginBottom: 12 }} data-tour="column-mapping">
             <label style={{ fontWeight: 600, display: 'block', marginBottom: 8 }}>Column Mapping</label>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
               <span>ID Column:</span>
@@ -408,7 +604,7 @@ export function CreateTaskPanel() {
                 +
               </button>
             </div>
-            <div style={{ marginTop: 8 }}>
+            <div style={{ marginTop: 8 }} data-tour="action-buttons">
               <button
                 onClick={async () => {
                   await saveColumnMapping()
@@ -440,7 +636,7 @@ export function CreateTaskPanel() {
           </div>
 
           {excelInfo.length > 0 && (
-            <div style={{ marginTop: 16, marginBottom: 12 }}>
+            <div style={{ marginTop: 16, marginBottom: 12 }} data-tour="excel-data-table">
               <label style={{ fontWeight: 600, display: 'block', marginBottom: 8 }}>
                 Excel Data ({filterByUsers ?
                   excelInfo.filter(item =>
